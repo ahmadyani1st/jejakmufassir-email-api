@@ -1,5 +1,3 @@
-bagus!! Ubah pakai env! EMAIL_PASS, EMAIL_USER
-
 import nodemailer from 'nodemailer';
 
 export default async function handler(req, res) {
