@@ -1,15 +1,12 @@
 {
-  "name": "jejakmufassir-email-api",
+  "name": "jejak-mufassir-email-service",
   "version": "1.0.0",
-  "description": "API untuk mengirim email notifikasi order",
+  "description": "Email notification service for Jejak Mufassir",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "dependencies": {
-    "nodemailer": "^6.9.8"
+    "nodemailer": "^6.9.7"
   },
-  "engines": {
-    "node": ">=16.x"
+  "scripts": {
+    "start": "node index.js"
   }
 }
