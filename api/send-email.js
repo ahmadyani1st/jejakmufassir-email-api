@@ -35,41 +35,14 @@ export default async function handler(req, res) {
       });
     }
 
-    // Alternative Email Transporter Configuration
-    let transporter;
-    
-    try {
-      // Option 1: Gmail with OAuth2 (recommended)
-      transporter = nodemailer.createTransport({
-        service: 'gmail',
-        secure: true,
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-        },
-        tls: {
-          rejectUnauthorized: false
-        }
-      });
-      
-    } catch (transportError) {
-      console.error('Gmail transport failed, trying SMTP:', transportError);
-      
-      // Option 2: Direct SMTP configuration
-      transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // true for 465, false for other ports
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-        },
-        tls: {
-          ciphers: 'SSLv3',
-          rejectUnauthorized: false
-        }
-      });
-    }
+    // Email configuration - using your real Gmail account
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'tandempedia@gmail.com', // Ganti dengan email Gmail Anda
+        pass: 'Aliman123' // Ganti dengan password Gmail Anda
+      }
+    });
 
     // Verify transporter
     console.log('Verifying email transporter...');
@@ -87,7 +60,7 @@ export default async function handler(req, res) {
       return timestamp;
     };
 
-    // Simplified email content for testing
+    // Email content
     const emailSubject = `[PESANAN BARU] ${req.body.invoiceNumber}`;
     
     const emailHtml = `
@@ -141,7 +114,7 @@ export default async function handler(req, res) {
     const mailOptions = {
       from: {
         name: 'Jejak Mufassir Store',
-        address: process.env.EMAIL_USER
+        address: 'tandempedia@gmail.com' // Ganti dengan email Gmail Anda
       },
       to: 'admin@jejakmufassir.my.id',
       subject: emailSubject,
@@ -178,20 +151,14 @@ export default async function handler(req, res) {
     });
     
   } catch (error) {
-    console.error('Detailed error:', {
-      message: error.message,
-      stack: error.stack,
-      code: error.code,
-      command: error.command,
-      errno: error.errno,
-      syscall: error.syscall
-    });
+    console.error('Detailed error:', error);
     
     return res.status(500).json({
       success: false,
       error: 'Gagal mengirim email',
       details: error.message,
-      code: error.code || 'UNKNOWN_ERROR'
+      code: error.code || 'UNKNOWN_ERROR',
+      suggestion: 'Pastikan Anda telah mengaktifkan akses aplikasi kurang aman di akun Google Anda'
     });
   }
 }
