@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     }
 
     // Email Transporter Configuration
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
@@ -238,7 +238,7 @@ export default async function handler(req, res) {
           <!-- Footer -->
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 12px;">
             <p style="margin: 0;">Email ini dikirim otomatis oleh sistem Jejak Mufassir</p>
-            <p style="margin: 5px 0 0 0;">© 2024 Jejak Mufassir. All rights reserved.</p>
+            <p style="margin: 5px 0 0 0;">© 2025 Jejak Mufassir. All rights reserved.</p>
           </div>
         </div>
       </div>
