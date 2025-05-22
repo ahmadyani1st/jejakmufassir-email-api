@@ -39,8 +39,8 @@ export default async function handler(req, res) {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'tandempedia@gmail.com', // Ganti dengan email Gmail Anda
-        pass: 'Aliman123' // Ganti dengan password Gmail Anda
+        user: 'ahmadyani.official@gmail.com', // Ganti dengan email Gmail Anda
+        pass: 'Rasulullah1234' // Ganti dengan password Gmail Anda
       }
     });
 
