@@ -1,3 +1,5 @@
+bagus!! Ubah pakai env! EMAIL_PASS, EMAIL_USER
+
 import nodemailer from 'nodemailer';
 
 export default async function handler(req, res) {
@@ -14,9 +16,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // API Key Verification (now using environment variable)
+  // API Key Verification
   const apiKey = req.headers['x-api-key'];
-  if (apiKey !== process.env.API_KEY) {
+  if (apiKey !== 'your-secure-key-123') {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
@@ -35,22 +37,14 @@ export default async function handler(req, res) {
       });
     }
 
-    // Validate environment variables
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      throw new Error('Email configuration not properly set in environment variables');
-    }
-
-    // Email configuration for Zoho Mail using environment variables
+    // Email configuration for Zoho Mail
     const transporter = nodemailer.createTransport({
       host: 'smtp.zoho.com',
-      port: 465,
-      secure: true,
+      port: 465, // Zoho's SSL port
+      secure: true, // use SSL
       auth: {
-        user: process.env.EMAIL_USER, // From environment variable
-        pass: process.env.EMAIL_PASS  // From environment variable
-      },
-      tls: {
-        rejectUnauthorized: true // Additional security
+        user: 'admin@jejakmufassir.my.id', // Your Zoho email address
+        pass: 'Widia@246' // Your Zoho email password or app-specific password
       }
     });
 
@@ -112,9 +106,9 @@ export default async function handler(req, res) {
         ` : ''}
         
         <div style="text-align: center; margin-top: 30px;">
-          <a href="https://www.jejakmufassir.my.id/" 
+          <a href="https://www.jejakmufassir.my.id/admin" 
              style="background-color: #4CAF50; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            📊 Buka Dashboard
+            📊 Buka Dashboard Admin
           </a>
         </div>
       </div>
@@ -124,7 +118,7 @@ export default async function handler(req, res) {
     const mailOptions = {
       from: {
         name: 'Jejak Mufassir Store',
-        address: process.env.EMAIL_USER // Using environment variable
+        address: 'admin@jejakmufassir.my.id' // Your Zoho email address
       },
       to: 'ahmadyani.official@gmail.com',
       subject: emailSubject,
@@ -146,12 +140,7 @@ export default async function handler(req, res) {
         Status: ${req.body.status || 'Belum dibayar'}
         
         ${req.body.catatan ? `Catatan: ${req.body.catatan}` : ''}
-      `,
-      // Additional email headers for security
-      headers: {
-        'X-Mailer': 'Jejak Mufassir Notification System',
-        'X-Priority': '1' // High priority
-      }
+      `
     };
 
     // Send email
@@ -171,9 +160,9 @@ export default async function handler(req, res) {
     return res.status(500).json({
       success: false,
       error: 'Gagal mengirim email',
-      details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      details: error.message,
       code: error.code || 'UNKNOWN_ERROR',
-      suggestion: 'Hubungi administrator sistem'
+      suggestion: 'Pastikan konfigurasi SMTP Zoho Mail sudah benar dan password akurat'
     });
   }
 }
