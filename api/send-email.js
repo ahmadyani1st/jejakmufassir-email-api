@@ -35,12 +35,14 @@ export default async function handler(req, res) {
       });
     }
 
-    // Email configuration - using your real Gmail account
+    // Email configuration for Zoho Mail
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.zoho.com',
+      port: 465, // Zoho's SSL port
+      secure: true, // use SSL
       auth: {
-        user: 'ahmadyani.official@gmail.com', // Ganti dengan email Gmail Anda
-        pass: 'Rasulullah1234' // Ganti dengan password Gmail Anda
+        user: 'admin@jejakmufassir.my.id', // Your Zoho email address
+        pass: 'Widia@246' // Your Zoho email password or app-specific password
       }
     });
 
@@ -114,9 +116,9 @@ export default async function handler(req, res) {
     const mailOptions = {
       from: {
         name: 'Jejak Mufassir Store',
-        address: 'tandempedia@gmail.com' // Ganti dengan email Gmail Anda
+        address: 'admin@jejakmufassir.my.id' // Your Zoho email address
       },
-      to: 'admin@jejakmufassir.my.id',
+      to: 'ahmadyani.official@gmail.com',
       subject: emailSubject,
       html: emailHtml,
       text: `
@@ -158,7 +160,7 @@ export default async function handler(req, res) {
       error: 'Gagal mengirim email',
       details: error.message,
       code: error.code || 'UNKNOWN_ERROR',
-      suggestion: 'Pastikan Anda telah mengaktifkan akses aplikasi kurang aman di akun Google Anda'
+      suggestion: 'Pastikan konfigurasi SMTP Zoho Mail sudah benar dan password akurat'
     });
   }
 }
