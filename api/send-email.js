@@ -1,12 +1,11 @@
 import nodemailer from 'nodemailer';
 
 export default async function handler(req, res) {
-  // Set CORS headers
+  // CORS Configuration
   res.setHeader('Access-Control-Allow-Origin', 'https://www.jejakmufassir.my.id');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
   
-  // Handle preflight request
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -15,53 +14,62 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // API Key Verification
+  const apiKey = req.headers['x-api-key'];
+  if (apiKey !== process.env.API_SECRET_KEY) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
   try {
-    const orderData = req.body;
+    // Data Validation
+    const requiredFields = ['invoiceNumber', 'fullName', 'productName', 'totalPayment'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        error: 'Data tidak lengkap',
+        missingFields
+      });
+    }
 
-    // Setup email transporter
+    // Email Transporter
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
+        pass: process.env.EMAIL_PASS
+      }
     });
 
-    // Format isi email (HTML)
-    const emailHtml = `
-      <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
-        <h2 style="color: #2d3748;">🛒 Order Baru #${orderData.invoiceNumber}</h2>
-        <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
-          <h3 style="color: #4a5568; margin-top: 0;">Detail Pelanggan</h3>
-          <p><strong>Nama:</strong> ${orderData.fullName}</p>
-          <p><strong>No. HP:</strong> ${orderData.phoneNumber}</p>
-          <p><strong>Alamat:</strong> ${orderData.address}, ${orderData.city}</p>
-        </div>
-        <div style="background: #f8fafc; padding: 15px; border-radius: 6px;">
-          <h3 style="color: #4a5568; margin-top: 0;">Detail Order</h3>
-          <p><strong>Produk:</strong> ${orderData.productName}</p>
-          <p><strong>Harga:</strong> Rp${parseInt(orderData.productPrice).toLocaleString('id-ID')}</p>
-          <p><strong>Total:</strong> Rp${parseInt(orderData.totalPayment).toLocaleString('id-ID')}</p>
-          <p><strong>Metode Bayar:</strong> ${orderData.paymentMethod}</p>
-        </div>
-        <p style="font-size: 12px; color: #718096; margin-top: 20px;">
-          ⏰ ${orderData.timestamp}
-        </p>
-      </div>
-    `;
-
-    // Kirim email
-    await transporter.sendMail({
+    // Email Content
+    const mailOptions = {
       from: `"Jejak Mufassir" <${process.env.EMAIL_USER}>`,
       to: 'admin@jejakmufassir.my.id',
-      subject: `[ORDER] ${orderData.invoiceNumber} - ${orderData.productName}`,
-      html: emailHtml,
-    });
+      subject: `[ORDER] ${req.body.invoiceNumber}`,
+      html: `
+        <h2>Order Baru</h2>
+        <p><strong>No. Invoice:</strong> ${req.body.invoiceNumber}</p>
+        <p><strong>Nama:</strong> ${req.body.fullName}</p>
+        <p><strong>Produk:</strong> ${req.body.productName}</p>
+        <p><strong>Total:</strong> Rp${parseInt(req.body.totalPayment).toLocaleString('id-ID')}</p>
+      `
+    };
 
-    res.status(200).json({ success: true });
+    // Send Email
+    await transporter.sendMail(mailOptions);
+    
+    return res.status(200).json({ success: true });
+    
   } catch (error) {
-    console.error("Gagal mengirim email:", error);
-    res.status(500).json({ error: "Gagal mengirim notifikasi email" });
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      response: error.response
+    });
+    
+    return res.status(500).json({
+      error: 'Gagal mengirim email',
+      details: error.message
+    });
   }
 }
