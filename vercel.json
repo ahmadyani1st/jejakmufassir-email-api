@@ -1,7 +1,13 @@
 {
   "version": 2,
-  "public": false,
-  "rewrites": [
-    { "source": "/api/send-email", "destination": "/api/send-email.js" }
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "https://www.jejakmufassir.my.id" },
+        { "key": "Access-Control-Allow-Methods", "value": "POST, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, x-api-key" }
+      ]
+    }
   ]
 }
