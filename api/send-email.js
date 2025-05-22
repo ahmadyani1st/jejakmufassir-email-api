@@ -1,75 +1,79 @@
-import nodemailer from 'nodemailer';
+// api/send-email.js
+const nodemailer = require('nodemailer');
 
 export default async function handler(req, res) {
-  // CORS Configuration
-  res.setHeader('Access-Control-Allow-Origin', 'https://www.jejakmufassir.my.id');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  // API Key Verification
-  const apiKey = req.headers['x-api-key'];
-  if (apiKey !== process.env.API_SECRET_KEY) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  try {
-    // Data Validation
-    const requiredFields = ['invoiceNumber', 'fullName', 'productName', 'totalPayment'];
-    const missingFields = requiredFields.filter(field => !req.body[field]);
-    
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        error: 'Data tidak lengkap',
-        missingFields
-      });
+    // Handle preflight request
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
     }
 
-    // Email Transporter
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
+    if (req.method !== 'POST') {
+        return res.status(405).json({ message: 'Method not allowed' });
+    }
 
-    // Email Content
-    const mailOptions = {
-      from: `"Jejak Mufassir" <${process.env.EMAIL_USER}>`,
-      to: 'admin@jejakmufassir.my.id',
-      subject: `[ORDER] ${req.body.invoiceNumber}`,
-      html: `
-        <h2>Order Baru</h2>
-        <p><strong>No. Invoice:</strong> ${req.body.invoiceNumber}</p>
-        <p><strong>Nama:</strong> ${req.body.fullName}</p>
-        <p><strong>Produk:</strong> ${req.body.productName}</p>
-        <p><strong>Total:</strong> Rp${parseInt(req.body.totalPayment).toLocaleString('id-ID')}</p>
-      `
-    };
+    try {
+        const { orderData } = req.body;
 
-    // Send Email
-    await transporter.sendMail(mailOptions);
-    
-    return res.status(200).json({ success: true });
-    
-  } catch (error) {
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack,
-      response: error.response
-    });
-    
-    return res.status(500).json({
-      error: 'Gagal mengirim email',
-      details: error.message
-    });
-  }
+        // Create transporter
+        const transporter = nodemailer.createTransporter({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+        });
+
+        // Email content
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: 'admin@jejakmufassir.my.id',
+            subject: 'Pemberitahuan Pesanan',
+            html: `
+                <h2>🛒 Pesanan Baru Masuk!</h2>
+                <p><strong>Pesan:</strong> Kamu memiliki pesanan baru</p>
+                
+                <h3>📋 Detail Pesanan:</h3>
+                <table border="1" style="border-collapse: collapse; width: 100%;">
+                    <tr><td><strong>Invoice</strong></td><td>${orderData.invoiceNumber}</td></tr>
+                    <tr><td><strong>Nama Pembeli</strong></td><td>${orderData.fullName}</td></tr>
+                    <tr><td><strong>Email</strong></td><td>${orderData.email}</td></tr>
+                    <tr><td><strong>Telefon</strong></td><td>${orderData.phoneNumber}</td></tr>
+                    <tr><td><strong>Alamat</strong></td><td>${orderData.address}, ${orderData.city}</td></tr>
+                    <tr><td><strong>Produk</strong></td><td>${orderData.productName}</td></tr>
+                    <tr><td><strong>Jumlah</strong></td><td>${orderData.quantity}</td></tr>
+                    <tr><td><strong>Total</strong></td><td>Rp ${parseInt(orderData.totalPayment).toLocaleString('id-ID')}</td></tr>
+                    <tr><td><strong>Pembayaran</strong></td><td>${orderData.paymentMethod}</td></tr>
+                    <tr><td><strong>Status</strong></td><td>${orderData.status}</td></tr>
+                    <tr><td><strong>Kurir</strong></td><td>${orderData.kurir}</td></tr>
+                    <tr><td><strong>Waktu</strong></td><td>${orderData.timestamp}</td></tr>
+                    <tr><td><strong>Catatan</strong></td><td>${orderData.catatan || 'Tidak ada catatan'}</td></tr>
+                </table>
+                
+                <br>
+                <p>Segera proses pesanan ini! 🚀</p>
+            `
+        };
+
+        // Send email
+        await transporter.sendMail(mailOptions);
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Email sent successfully' 
+        });
+
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to send email',
+            error: error.message 
+        });
+    }
 }
